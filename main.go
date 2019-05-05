@@ -1,5 +1,9 @@
 package main
 
+/*
+This project is created by mauricio castillo
+*/
+
 import (
 	"database/sql"
 	"encoding/json"
@@ -7,8 +11,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 	"strconv"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -25,6 +29,7 @@ type Recipe struct {
 //Recipes is a array of structure
 type Recipes []Recipe
 
+// returnAllRecipe this function return a array all Recipe
 func returnAllRecipe(w http.ResponseWriter, r *http.Request) {
 	var arrayRecipes Recipes
 	// Connect to the "company_db" database.
@@ -57,6 +62,71 @@ func returnAllRecipe(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(arrayRecipes)
 }
 
+// findRecipe this function return a array all Recipe in based
+/*
+	{
+		"name": "desayuno"
+	}
+*/
+func findRecipe(w http.ResponseWriter, r *http.Request) {
+	type Message struct {
+		Name string `json:"name"`
+	}
+	// Read body
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// Unmarshal
+	var msg Message
+	err = json.Unmarshal(b, &msg)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	var arrayRecipes Recipes
+	// Connect to the "company_db" database.
+	db, err := sql.Open("postgres", "postgresql://root@localhost:26257/company_db?sslmode=disable")
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Select Statement.
+	var sql = "SELECT id, title, ingredients, preparation, updated_at FROM recipe_object "
+	sql += "WHERE LOWER(title) LIKE LOWER('%" + msg.Name + "%') OR LOWER(ingredients) LIKE LOWER('%" + msg.Name + "%'); "
+	rows, err := db.Query(sql)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int64
+		var title string
+		var ingredients string
+		var preparation string
+		var updatedAt string
+		if err := rows.Scan(&id, &title, &ingredients, &preparation, &updatedAt); err != nil {
+			log.Println(err)
+		}
+		recipe := Recipe{ID: id, Title: title, Ingredients: ingredients, Preparation: preparation, Updated: updatedAt}
+		arrayRecipes = append(arrayRecipes, recipe)
+	}
+
+	log.Println("Endpoint Hit: findRecipe")
+	json.NewEncoder(w).Encode(arrayRecipes)
+}
+
+// insertRecipe this function insert a new Recipe in based
+/*
+{
+	"Title":"Arroz llanero",
+	"Ingredients":"Rancheras, Huevos,Arroz, leche",
+	"Preparation":"Dile a ungringo que llame a su empleada latina y lo prepare"
+}
+*/
 func insertRecipe(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var objectRepice Recipe
@@ -64,6 +134,8 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println(err)
+		http.Error(w, err.Error(), 500)
+		return
 	}
 
 	log.Println(objectRepice.Title)
@@ -85,7 +157,56 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(objectRepice)
 }
 
+/*This function delete a object type recipe of database
+{
+	"Id": 448890587979382785,
+}
+*/
 func deleteRecipe(w http.ResponseWriter, r *http.Request) {
+	// Read body
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	} /*This function delete a object type recipe of database
+	{
+		"Id": 448890587979382785,
+	}
+	*/
+
+	// Unmarshal
+	var msg Recipe
+	err = json.Unmarshal(b, &msg)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	// Connect to the "company_db" database.
+	db, err := sql.Open("postgres", "postgresql://root@localhost:26257/company_db?sslmode=disable")
+	if err != nil {
+		log.Println("error connecting to the database: ", err)
+	}
+	// Insert a row into the "recipe" table.
+	var sql = "DELETE FROM recipe_object WHERE id = " + strconv.FormatInt(msg.ID, 10) + "; "
+	if _, err := db.Exec(sql); err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Endpoint Hit: deleteRecipe")
+
+	json.NewEncoder(w).Encode(msg)
+}
+
+/*This function update a object type recipe of database
+{
+    "Id": 448904999043235841,
+    "Title":"Desayuno para campeones",
+	"Ingredients":"Un capeon y un pancahco",
+	"Preparation":"Dale de comer al campeon"
+}
+*/
+func updateRecipe(w http.ResponseWriter, r *http.Request) {
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -107,12 +228,15 @@ func deleteRecipe(w http.ResponseWriter, r *http.Request) {
 		log.Println("error connecting to the database: ", err)
 	}
 	// Insert a row into the "recipe" table.
-	var sql = "DELETE FROM recipe_object WHERE id = " + strconv.FormatInt(msg.ID,10) + "; "
+	var sql = "UPDATE recipe_object "
+	sql += "SET title = '" + msg.Title + "', ingredients = '" + msg.Ingredients + "', preparation = '" + msg.Preparation + "', updated_at = NOW() "
+	sql += "WHERE id = " + strconv.FormatInt(msg.ID, 10) + "; "
+
 	if _, err := db.Exec(sql); err != nil {
 		log.Println(err)
 	}
 
-	log.Println("Endpoint Hit: deleteRecipe")
+	log.Println("Endpoint Hit: updateRecipe")
 
 	json.NewEncoder(w).Encode(msg)
 }
@@ -126,7 +250,8 @@ func handleRequests() {
 	http.HandleFunc("/allRepice", returnAllRecipe)
 	http.HandleFunc("/insertRecipe", insertRecipe)
 	http.HandleFunc("/deleteRecipe", deleteRecipe)
-
+	http.HandleFunc("/updateRecipe", updateRecipe)
+	http.HandleFunc("/findRecipe", findRecipe)
 }
 
 func main() {
