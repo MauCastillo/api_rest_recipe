@@ -19,11 +19,11 @@ import (
 
 //Recipe kitchen structure
 type Recipe struct {
-	ID          int64  `json:"Id"`
-	Title       string `json:"Title"`
-	Ingredients string `json:"Ingredients"`
-	Preparation string `json:"Preparation"`
-	Updated     string `json:"Updated"`
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Ingredients string `json:"ingredients"`
+	Preparation string `json:"preparation"`
+	Updated     string `json:"updated"`
 }
 
 //Recipes is a array of structure
@@ -31,6 +31,7 @@ type Recipes []Recipe
 
 // returnAllRecipe this function return a array all Recipe
 func returnAllRecipe(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	var arrayRecipes Recipes
 	// Connect to the "company_db" database.
 	db, err := sql.Open("postgres", "postgresql://root@localhost:26257/company_db?sslmode=disable")
@@ -69,6 +70,7 @@ func returnAllRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 */
 func findRecipe(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	type Message struct {
 		Name string `json:"name"`
 	}
@@ -128,6 +130,7 @@ func findRecipe(w http.ResponseWriter, r *http.Request) {
 }
 */
 func insertRecipe(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	decoder := json.NewDecoder(r.Body)
 	var objectRepice Recipe
 	err := decoder.Decode(&objectRepice)
@@ -138,7 +141,6 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(objectRepice.Title)
 	// Connect to the "company_db" database.
 	db, err := sql.Open("postgres", "postgresql://root@localhost:26257/company_db?sslmode=disable")
 	if err != nil {
@@ -163,6 +165,7 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 }
 */
 func deleteRecipe(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -177,7 +180,10 @@ func deleteRecipe(w http.ResponseWriter, r *http.Request) {
 
 	// Unmarshal
 	var msg Recipe
+	
+	log.Println(">>> ")
 	err = json.Unmarshal(b, &msg)
+	
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -189,6 +195,7 @@ func deleteRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 	// Insert a row into the "recipe" table.
 	var sql = "DELETE FROM recipe_object WHERE id = " + strconv.FormatInt(msg.ID, 10) + "; "
+	log.Println(">>> sql <<< ", sql)
 	if _, err := db.Exec(sql); err != nil {
 		log.Println(err)
 	}
@@ -207,6 +214,7 @@ func deleteRecipe(w http.ResponseWriter, r *http.Request) {
 }
 */
 func updateRecipe(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -241,6 +249,7 @@ func updateRecipe(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(msg)
 }
 func homePage(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	fmt.Fprintf(w, "Welcome to the HomePage!")
 	log.Println("Endpoint Hit: homePage")
 }
@@ -263,4 +272,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
