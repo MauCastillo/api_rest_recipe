@@ -2,7 +2,7 @@ var app = new Vue({
     el: '#app',
     data: {
         recipes_objects: {},
-        path: 'http://3.19.72.131/:8000',
+        path: 'http://3.19.72.131:8000',
         modal_title: 'Update recipe',
         button_modal: 'save',
         id_object_selected: '',
