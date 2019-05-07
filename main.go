@@ -29,8 +29,12 @@ type Recipe struct {
 type Recipes []Recipe
 
 // returnAllRecipe this function return a array all Recipe
-func returnAllRecipe(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+func returnAllRecipe(w *http.ResponseWriter, r *http.Request) {
+
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+    (*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+    (*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	//enableCors(&w)
 	var arrayRecipes Recipes
 	// Connect to the "company_db" database.
 	db, err := sql.Open("postgres", "postgresql://root@localhost:26257/company_db?sslmode=disable")
