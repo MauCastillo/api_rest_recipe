@@ -1,3 +1,4 @@
+setTimeout(function(){
 $(document).ready(function() {
 	
 	// Sidebar Overlay
@@ -124,3 +125,4 @@ $(document).ready(function() {
 	})
 	
 });
+}, 4000);
