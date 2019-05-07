@@ -16,6 +16,7 @@ var app = new Vue({
             $.ajax({
                 url: this.path + "/allRepice",
                 type: 'GET',
+                crossDomain: true,
                 success: function (result) {
                     app.recipes_objects = JSON.parse(result)
                 },
@@ -28,7 +29,9 @@ var app = new Vue({
           const settings = {
             "url": app.path + '/findRecipe',
             "method": "POST",
-            "data": data_object 
+            "data": data_object,
+            "crossDomain": true,
+             
           }
           
           $.ajax(settings).done(function (response) {
@@ -58,7 +61,8 @@ var app = new Vue({
                   const settings = {
                     "url": app.path + '/deleteRecipe',
                     "method": "POST",
-                    "data": data_object 
+                    "data": data_object,
+                    "crossDomain": true, 
                   }
                   
                   $.ajax(settings).done(function (response) {
@@ -101,7 +105,8 @@ var app = new Vue({
         var settings = {
           "url": app.path + ruta,
           "method": "POST",
-          "data": data_send
+          "data": data_send,
+          "crossDomain": true,
         }
         
         $.ajax(settings).done(function (response) {
