@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-    <title>Dradmin - Bootstrap Admin Template</title>
+    <title>Recipes Menu</title>
     <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
     <link href="https://fonts.googleapis.com/css?family=poppins:300,400,500,600,700" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
@@ -12,26 +12,27 @@
     <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
-    <!--[if lt IE 9]>
-		<script src="assets/js/html5shiv.min.js"></script>
-		<script src="assets/js/respond.min.js"></script>
-	<![endif]-->
 </head>
 
 <body>
-
+    <div id="app">
     <div class="content-wrap">
         <div class="content container-fluid">
             <div class="row">
-                <div class="col-sm-4 col-xs-3">
+                    <div class="form-group"> 
+                      <input v-model="search" type="text" class="form-control" placeholder="search" id="search">
+                    </div>
+                    <button v-on:click="find_table" class="btn btn-primary">Search</button>
+                  
+                  <br>
+                  <div class="col-sm-4 col-xs-3">
                     <h4 class="page-title">Recipes</h4>
                 </div>
                 <div class="col-sm-8 col-xs-9 text-right">
-                    <a href="add-patient.html" class="btn add-btn btn-custom m-b-30"><i class="fa fa-plus"></i> Add
-                        recipe</a>
+                    <button v-on:click="add_recipe_load" data-toggle="modal" data-target="#myModal" class="btn add-btn btn-custom m-b-30"><i class="fa fa-plus"></i> Add recipe</button>
                 </div>
             </div>
-            <div id="app" class="row">
+            <div  class="row">
                 <div class="col-md-12">
                     <div class="card-box">
                         <div class="table-responsive">
@@ -54,11 +55,11 @@
                                         <td> {{elemento.updated}}</td>
 
                                         <td class="text-right">
-                                            <a href="edit-patient.html" class="action-icon dropdown-toggle"
-                                                data-toggle="dropdown" aria-expanded="false"><i
-                                                    class="fa fa-pencil m-r-5"></i></a>
+                                            <button v-on:click="update_recipe_load(index)" class="action-icon"
+                                            data-toggle="modal" data-target="#myModal" aria-expanded="false"><i
+                                                    class="fa fa-pencil m-r-5"></i></button>
                                             <button v-on:click="delete_recipe(index)"
-                                                class="action-icon dropdown-toggle" data-toggle="dropdown"
+                                                class="action-icon" 
                                                 aria-expanded="false"><i class="fa fa-trash-o m-r-5"></i></button>
                                         </td>
                                     </tr>
@@ -70,27 +71,46 @@
             </div>
         </div>
     </div>
-    <div id="delete_patient" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Delete Patient</h4>
-                </div>
-                <form>
-                    <div class="modal-body">
-                        <p>Are you sure want to delete Patient?</p>
-                    </div>
-                    <div class="modal-footer"> <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </div>
-                </form>
-            </div>
+
+      <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">{{ modal_title }}</h4>
         </div>
+        <div class="modal-body">
+            <form>
+                <div class="form-group">
+                  <label>Recipe name</label>
+                  <input minlength="2" maxlength="100" class="form-control form-control-lg" type="text" placeholder="pizza" id="name">
+                </div>
+                <div class="form-group">
+                    <label>Ingredients</label>
+                    <textarea  minlength="2" maxlength="4069" class="form-control form-control-lg" rows="3" type="text" placeholder="potatos, onion" id="ingredients"></textarea>
+                  </div>
+                <div class="form-group">
+                    <label>Preparation</label>
+                    <textarea minlength="2" maxlength="4069" class="form-control" id="preparation" rows="4"></textarea>
+                  </div>
+              </form>
+        </div>
+        <div class="modal-footer">
+          <button v-on:click="save_recipe" type="button" class="btn btn-default" data-dismiss="modal">{{button_modal}}</button>
+        </div>
+      </div>
+      
     </div>
-    </div>
+  </div>
+  </div>
+
     <div class="sidebar-overlay" data-reff="#sidebar"></div>
     <!-- development version, includes helpful console warnings -->
+    <script src="sweetalert2.min.js"></script>
+<link rel="stylesheet" href="sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="assets/js/modernizr.min.js"></script>
     <script type="text/javascript" src="assets/js/jquery-3.2.1.min.js"></script>
@@ -98,6 +118,7 @@
     <script type="text/javascript" src="assets/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="assets/js/dataTables.bootstrap.min.js"></script>
     <script type="text/javascript" src="assets/js/jquery.slimscroll.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
     <script type="text/javascript" src="js/app.js"></script>
 </body>
 

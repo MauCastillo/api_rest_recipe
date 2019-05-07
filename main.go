@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -19,7 +18,7 @@ import (
 
 //Recipe kitchen structure
 type Recipe struct {
-	ID          int64  `json:"id"`
+	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Ingredients string `json:"ingredients"`
 	Preparation string `json:"preparation"`
@@ -47,7 +46,7 @@ func returnAllRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var id int64
+		var id string
 		var title string
 		var ingredients string
 		var preparation string
@@ -105,7 +104,7 @@ func findRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var id int64
+		var id string
 		var title string
 		var ingredients string
 		var preparation string
@@ -194,7 +193,7 @@ func deleteRecipe(w http.ResponseWriter, r *http.Request) {
 		log.Println("error connecting to the database: ", err)
 	}
 	// Insert a row into the "recipe" table.
-	var sql = "DELETE FROM recipe_object WHERE id = " + strconv.FormatInt(msg.ID, 10) + "; "
+	var sql = "DELETE FROM recipe_object WHERE id = " + msg.ID + "; "
 	log.Println(">>> sql <<< ", sql)
 	if _, err := db.Exec(sql); err != nil {
 		log.Println(err)
@@ -238,7 +237,7 @@ func updateRecipe(w http.ResponseWriter, r *http.Request) {
 	// Insert a row into the "recipe" table.
 	var sql = "UPDATE recipe_object "
 	sql += "SET title = '" + msg.Title + "', ingredients = '" + msg.Ingredients + "', preparation = '" + msg.Preparation + "', updated_at = NOW() "
-	sql += "WHERE id = " + strconv.FormatInt(msg.ID, 10) + "; "
+	sql += "WHERE id = " + msg.ID + "; "
 
 	if _, err := db.Exec(sql); err != nil {
 		log.Println(err)
